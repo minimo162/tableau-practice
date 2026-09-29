@@ -1,0 +1,628 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tableau 入門デモ 手順書</title>
+<meta name="description" content="Tableau Desktop でサンプルデータ（Superstore）から売上分析ダッシュボードを作る手順を、実際の画面操作のスクリーンショットつきで解説します。">
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --text: #1d2330;
+    --muted: #5b6577;
+    --border: #dfe3ea;
+    --accent: #1f5fae;
+    --accent-soft: #e7f0fb;
+    --mark: #e62828;
+    --note-bg: #fff8e6;
+    --note-border: #f0c86a;
+    --insight-bg: #eaf7ef;
+    --insight-border: #7cc79a;
+    --warn-bg: #fdeeee;
+    --warn-border: #eea3a3;
+    --code-bg: #eef1f6;
+    --shadow: 0 1px 2px rgba(20, 30, 50, .06), 0 4px 16px rgba(20, 30, 50, .06);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12161d;
+      --surface: #1a2029;
+      --text: #e6e9ef;
+      --muted: #9aa5b8;
+      --border: #2b3441;
+      --accent: #6aa8f0;
+      --accent-soft: #1d2b40;
+      --note-bg: #2b2616;
+      --note-border: #6b5a22;
+      --insight-bg: #16291f;
+      --insight-border: #2f6b48;
+      --warn-bg: #2d1a1a;
+      --warn-border: #7a3b3b;
+      --code-bg: #232b38;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12161d; --surface: #1a2029; --text: #e6e9ef; --muted: #9aa5b8; --border: #2b3441;
+    --accent: #6aa8f0; --accent-soft: #1d2b40; --note-bg: #2b2616; --note-border: #6b5a22;
+    --insight-bg: #16291f; --insight-border: #2f6b48; --warn-bg: #2d1a1a; --warn-border: #7a3b3b;
+    --code-bg: #232b38; --shadow: 0 1px 2px rgba(0, 0, 0, .4);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; scroll-padding-top: 1rem; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Yu Gothic", Meiryo, system-ui, sans-serif;
+    line-height: 1.85;
+    font-size: 16px;
+  }
+  a { color: var(--accent); }
+  p, li, td, th, figcaption { overflow-wrap: anywhere; }
+  code, kbd {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+    background: var(--code-bg);
+    border-radius: 4px;
+    padding: .08em .4em;
+    font-size: .92em;
+  }
+  kbd { border: 1px solid var(--border); border-bottom-width: 2px; }
+
+  .layout {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 16px 80px;
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 32px;
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: minmax(0, 1fr); }
+    nav.toc { position: static !important; }
+  }
+
+  header.hero { grid-column: 1 / -1; padding: 40px 0 8px; }
+  header.hero .eyebrow { color: var(--accent); font-weight: 700; letter-spacing: .04em; font-size: .9rem; margin: 0; }
+  header.hero h1 { font-size: clamp(1.7rem, 4vw, 2.5rem); line-height: 1.3; margin: .3rem 0 .6rem; }
+  header.hero p.lead { color: var(--muted); margin: 0 0 1rem; max-width: 46rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: .5rem; padding: 0; margin: 0; list-style: none; }
+  .chips li {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 999px;
+    padding: .2rem .8rem; font-size: .85rem; color: var(--muted);
+  }
+
+  nav.toc {
+    position: sticky; top: 16px; align-self: start;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; font-size: .9rem; box-shadow: var(--shadow);
+  }
+  nav.toc h2 { font-size: .8rem; letter-spacing: .08em; color: var(--muted); margin: 0 0 .5rem; }
+  nav.toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: .1rem; }
+  nav.toc a { display: block; padding: .28rem .5rem; border-radius: 6px; text-decoration: none; color: var(--text); line-height: 1.5; }
+  nav.toc a:hover { background: var(--accent-soft); color: var(--accent); }
+
+  main { min-width: 0; }
+  section {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+    padding: 28px clamp(16px, 3vw, 36px); margin: 0 0 24px; box-shadow: var(--shadow);
+  }
+  section h2 { font-size: 1.45rem; margin: 0 0 .3rem; line-height: 1.4; }
+  section h2 .no {
+    display: inline-block; background: var(--accent); color: #fff; border-radius: 8px;
+    font-size: .85rem; padding: .05rem .6rem; margin-right: .6rem; vertical-align: .12em; font-weight: 700;
+  }
+  section .goal { color: var(--muted); margin: 0 0 1.2rem; }
+  section h3 { font-size: 1.08rem; margin: 1.8rem 0 .5rem; }
+
+  ol.steps { list-style: none; counter-reset: step; margin: 1rem 0; padding: 0; }
+  ol.steps > li {
+    counter-increment: step; position: relative; padding: 0 0 .9rem 2.6rem; margin: 0;
+  }
+  ol.steps > li::before {
+    content: counter(step); position: absolute; left: 0; top: .12rem;
+    width: 1.8rem; height: 1.8rem; border-radius: 7px; background: var(--accent-soft); color: var(--accent);
+    font-weight: 700; text-align: center; line-height: 1.8rem; font-size: .9rem;
+  }
+  ol.steps > li:not(:last-child)::after {
+    content: ""; position: absolute; left: .88rem; top: 2rem; bottom: .1rem; width: 2px; background: var(--border);
+  }
+
+  figure { margin: 1rem 0 1.4rem; }
+  figure .frame {
+    display: block; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: #fff;
+    box-shadow: var(--shadow);
+  }
+  figure img { display: block; width: 100%; height: auto; }
+  figure a { display: block; cursor: zoom-in; }
+  figcaption { margin-top: .6rem; font-size: .93rem; color: var(--text); }
+  figcaption .cap-title { font-weight: 700; display: block; margin-bottom: .3rem; }
+  ol.marks { list-style: none; counter-reset: m; margin: .4rem 0 0; padding: 0; display: grid; gap: .35rem; }
+  ol.marks li { counter-increment: m; display: flex; gap: .6rem; align-items: flex-start; line-height: 1.6; }
+  ol.marks li::before {
+    content: counter(m); flex: none; width: 1.45rem; height: 1.45rem; border-radius: 50%;
+    background: var(--mark); color: #fff; font: 700 .8rem/1.45rem Arial, sans-serif; text-align: center; margin-top: .1rem;
+  }
+
+  .callout {
+    border-left: 4px solid var(--note-border); background: var(--note-bg);
+    border-radius: 8px; padding: .8rem 1rem; margin: 1.1rem 0;
+  }
+  .callout > :first-child { margin-top: 0; }
+  .callout > :last-child { margin-bottom: 0; }
+  .callout .label { font-weight: 800; display: block; margin-bottom: .2rem; font-size: .9rem; }
+  .callout.insight { background: var(--insight-bg); border-left-color: var(--insight-border); }
+  .callout.warn { background: var(--warn-bg); border-left-color: var(--warn-border); }
+
+  table { border-collapse: collapse; width: 100%; font-size: .93rem; margin: .8rem 0; }
+  th, td { border: 1px solid var(--border); padding: .45rem .7rem; text-align: left; vertical-align: top; }
+  th { background: var(--accent-soft); }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .table-wrap { overflow-x: auto; }
+
+  ul.tight { margin: .4rem 0; padding-left: 1.3rem; }
+  ul.tight li { margin: .2rem 0; }
+  .pill { display: inline-block; border-radius: 999px; padding: 0 .65rem; font-size: .82rem; font-weight: 700; line-height: 1.6; }
+  .pill.dim { background: #dbe8f7; color: #1b4f8a; }
+  .pill.mea { background: #d9f0e4; color: #17683f; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .pill.dim { background: #1f3350; color: #a9cbf5; }
+    :root:not([data-theme="light"]) .pill.mea { background: #16382a; color: #9fdcb9; }
+  }
+  footer { grid-column: 1 / -1; color: var(--muted); font-size: .85rem; text-align: center; padding-top: 8px; }
+  @media print {
+    nav.toc { display: none; }
+    .layout { display: block; }
+    section { box-shadow: none; break-inside: avoid-page; }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<header class="hero">
+  <p class="eyebrow">TABLEAU PRACTICE / 手順書</p>
+  <h1>Superstore で「売上分析ダッシュボード」を作る</h1>
+  <p class="lead">Tableau Desktop でサンプルデータから 4 つのビューと 1 つのダッシュボードを作る手順です。画面はすべて実際に操作して撮影したもので、赤い丸の番号は説明文の番号と対応しています。</p>
+  <ul class="chips">
+    <li>Tableau Desktop 2026.2（日本語 UI）</li>
+    <li>データ：サンプル - スーパーストア</li>
+    <li>作るもの：シート 4 枚 ＋ ダッシュボード 1 枚</li>
+    <li>所要時間の目安：40 分</li>
+  </ul>
+</header>
+
+<nav class="toc" aria-label="目次">
+  <h2>目次</h2>
+  <ol>
+    <li><a href="#done">完成イメージ</a></li>
+    <li><a href="#connect">1. データに接続する</a></li>
+    <li><a href="#screen">2. 画面の見方</a></li>
+    <li><a href="#sheet1">3. 月別売上推移＋予測</a></li>
+    <li><a href="#sheet2">4. サブカテゴリ別 売上と利益</a></li>
+    <li><a href="#sheet3">5. 都道府県別 利益マップ</a></li>
+    <li><a href="#sheet4">6. 計算フィールド</a></li>
+    <li><a href="#dash">7. ダッシュボードにまとめる</a></li>
+    <li><a href="#save">8. 保存する</a></li>
+    <li><a href="#next">9. 分析結果の語り方と次の一歩</a></li>
+    <li><a href="#trouble">付録：つまずきやすい所</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<section id="done">
+  <h2>完成イメージ</h2>
+  <p class="goal">最終的にこのダッシュボードを作ります。</p>
+  <figure>
+    <span class="frame"><a href="images/00-final-dashboard.png" target="_blank" rel="noopener"><img src="images/00-final-dashboard.png" alt="完成した売上分析ダッシュボード。左上に月別売上推移と予測、右上に都道府県別の利益マップ、左下にサブカテゴリ別の売上と利益、右下に出荷モード別の平均リードタイム。" loading="lazy"></a></span>
+    <figcaption><span class="cap-title">売上分析ダッシュボード（完成）</span>クリックで原寸表示します。</figcaption>
+  </figure>
+  <h3>この演習で触れる Tableau の基本機能</h3>
+  <ul class="tight">
+    <li>データへの接続、ディメンションとメジャー、<b>離散と連続</b>の違い</li>
+    <li>マーク（棒・線・マップ）と色の使い方</li>
+    <li>アナリティクス機能：<b>傾向線・予測</b>（統計的な分析を 1 操作で追加）</li>
+    <li><b>計算フィールド</b>（日付の差から出荷リードタイムを算出）</li>
+    <li>ダッシュボードの組み立てと<b>フィルターアクション</b></li>
+  </ul>
+</section>
+
+<section id="connect">
+  <h2><span class="no">1</span>データに接続する</h2>
+  <p class="goal">Tableau に付属のサンプルデータ「サンプル - スーパーストア」を開きます。</p>
+  <ol class="steps">
+    <li>Tableau Desktop を起動します。スタート画面が開きます。</li>
+    <li>左側の「<b>保存されたデータ ソース</b>」にある「<b>サンプル - スーパーストア</b>」をクリックします。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/01-start.png" target="_blank" rel="noopener"><img src="images/01-start.png" alt="Tableau のスタート画面。左下の保存されたデータ ソースに『サンプル - スーパーストア』が赤枠で示されている。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li><b>サンプル - スーパーストア</b>：日本語版のサンプルデータ。「Sample - Superstore」は英語版です。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="callout">
+    <span class="label">POINT</span>
+    日本語版には都道府県のデータがあるため、後半で日本地図を作れます。英語版を使う場合は「都道府県」を「State（州）」に読み替えてください。
+  </div>
+</section>
+
+<section id="screen">
+  <h2><span class="no">2</span>画面の見方</h2>
+  <p class="goal">データに接続すると、空のワークシート（シート 1）が開きます。まず 4 つの領域を覚えます。</p>
+  <figure>
+    <span class="frame"><a href="images/02-worksheet.png" target="_blank" rel="noopener"><img src="images/02-worksheet.png" alt="空のワークシート。左のデータペイン、上部の列と行シェルフ、マークカード、フィルターカードに番号が付いている。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li><b>データペイン</b>：使えるフィールドの一覧。ここから画面中央へドラッグして分析します。</li>
+        <li><b>列・行シェルフ</b>：グラフの横軸（列）と縦軸（行）に何を置くかを決める場所。</li>
+        <li><b>マークカード</b>：グラフの見た目を決める場所。色・サイズ・ラベル・詳細などにフィールドを置きます。</li>
+        <li><b>フィルターカード</b>：表示するデータを絞り込みます。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <h3>ディメンションとメジャー</h3>
+  <p>データペインのフィールドは 2 種類に分かれます。</p>
+  <ul class="tight">
+    <li><span class="pill dim">ディメンション（青）</span>：カテゴリ・日付など「切り口」。例：サブカテゴリ、出荷モード、オーダー日</li>
+    <li><span class="pill mea">メジャー（緑）</span>：集計できる数値。例：売上、利益、数量</li>
+  </ul>
+  <div class="callout">
+    <span class="label">TIP</span>
+    フィールドは<b>ダブルクリック</b>で自動的に配置されます。細かく置きたいときは、列・行・マークカードへ<b>ドラッグ</b>します。
+  </div>
+</section>
+
+<section id="sheet1">
+  <h2><span class="no">3</span>月別売上推移＋予測（シート 1）</h2>
+  <p class="goal">売上の時系列を折れ線で描き、統計的な予測を重ねます。</p>
+  <ol class="steps">
+    <li>データペインの「<b>オーダー日</b>」をダブルクリックします。列に「年(オーダー日)」が入ります。</li>
+    <li>続けて「<b>売上</b>」をダブルクリックします。年ごとの合計が数値の表で表示されます。</li>
+    <li>マークカードにある「合計(売上)」を<b>行シェルフへドラッグ</b>します。年単位（4 点）の折れ線グラフになります。</li>
+    <li>列の「年(オーダー日)」を<b>右クリック</b>し、メニューの<b>下段（連続）の「月」</b>を選びます。（次の図）</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/03-date-menu.png" target="_blank" rel="noopener"><img src="images/03-date-menu.png" alt="日付フィールドを右クリックしたメニュー。下段の連続の『月』と上段の離散の『月』が赤枠で示されている。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li><b>連続の「月」</b>（表示例：2015 年 5 月）。時系列の折れ線では基本的にこちらを選びます。</li>
+        <li>離散の「月」（表示例：5 月）。1 月〜12 月の<b>月名ごとに別々の区分</b>として並べたいときに使います。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="callout">
+    <span class="label">離散と連続</span>
+    メニューは上段が<b>離散（青）</b>、下段が<b>連続（緑）</b>です。離散は「1 つ 1 つの区分」、連続は「切れ目のない時間軸」を表します。折れ線で時間の流れを見るなら連続です。
+  </div>
+  <ol class="steps" style="counter-reset: step 4">
+    <li>画面下のシート名「シート 1」をダブルクリックして「<b>月別売上推移</b>」に変更します。</li>
+    <li>ペイン上部のタブを<b>アナリティクス</b>に切り替えます。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/05-analytics-pane.png" target="_blank" rel="noopener"><img src="images/05-analytics-pane.png" alt="アナリティクスペイン。モデルの下に傾向線、予測、クラスターが並び赤枠で示されている。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li><b>傾向線</b>：回帰による全体のトレンド線（線形・対数など）。</li>
+        <li><b>予測</b>：将来の値の推定と、その幅（予測区間）を描きます。</li>
+        <li><b>クラスター</b>：似た傾向のデータをグループ分けします（今回は使いません）。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <ol class="steps" style="counter-reset: step 6">
+    <li>「<b>傾向線</b>」をグラフ上へドラッグします。点線のトレンド線が追加されます。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/06-trendline.png" target="_blank" rel="noopener"><img src="images/06-trendline.png" alt="月別売上の折れ線に、右肩上がりの点線の傾向線が重なっている。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li>アナリティクスの「傾向線」</li>
+        <li>追加された傾向線（点線）。月ごとの上下が大きくても、全体は右肩上がりだと分かります。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <ol class="steps" style="counter-reset: step 7">
+    <li>次に「<b>予測</b>」をダブルクリックします。傾向線と予測を同時に置くと線が二重になって読みにくいので、ここでは <kbd>Ctrl</kbd>+<kbd>Z</kbd> で傾向線を戻してから予測だけを追加しています。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/07-forecast.png" target="_blank" rel="noopener"><img src="images/07-forecast.png" alt="折れ線の右側に、水色の予測線と薄い水色の予測区間の帯が追加されている。右側に予測インジケーターの凡例がある。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li>アナリティクスの「予測」</li>
+        <li><b>予測区間</b>：薄い水色の帯。先に行くほど幅が広がり、不確実性が増すことを表します。</li>
+        <li><b>予測インジケーター</b>：濃い青が「実績」、薄い青が「推定」。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="callout insight">
+    <span class="label">分かったこと</span>
+    年別の売上は <b>2023 年 74,106,032 → 2024 年 70,948,955 → 2025 年 92,090,037 → 2026 年 111,835,130</b>。2024 年は前年比約 −4.3% と落ち込み、2025 年は約 +29.8%、2026 年は約 +21.4% と回復・成長しています。予測の帯が広いのは、月ごとの変動が大きいためです。
+  </div>
+  <div class="callout">
+    <span class="label">POINT（統計の言葉で説明する）</span>
+    傾向線は回帰、予測は指数平滑法系のモデルです。「予測は点ではなく<b>区間</b>で見る」と説明できると、分析の意図が伝わります。
+  </div>
+</section>
+
+<section id="sheet2">
+  <h2><span class="no">4</span>サブカテゴリ別 売上と利益（シート 2）</h2>
+  <p class="goal">売上の大きさは棒の長さ、利益は色で表し、「売れているのに儲かっていない」商品を探します。</p>
+  <ol class="steps">
+    <li>画面下の「<b>新しいワークシート</b>」アイコンをクリックし、データタブに戻ります。</li>
+    <li>データペインの「<b>製品</b>」の左の矢印（▶）で展開します。中に「カテゴリ」「サブカテゴリ」「製品名」があります。</li>
+    <li>「<b>サブカテゴリ</b>」を<b>行シェルフ</b>へドラッグします。</li>
+    <li>「<b>売上</b>」を<b>列シェルフ</b>へドラッグします。</li>
+    <li>「<b>利益</b>」を<b>マークカードの「色」</b>へドラッグします。</li>
+    <li>ツールバーの「<b>降順に並べ替え</b>」をクリックし、シート名を「サブカテゴリ別 売上と利益」に変更します。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/08-bar-chart.png" target="_blank" rel="noopener"><img src="images/08-bar-chart.png" alt="サブカテゴリ別の横棒グラフ。棒の長さが売上、色が利益。テーブルの棒だけがオレンジ色。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li><b>行</b>：サブカテゴリ（ディメンション）</li>
+        <li><b>列</b>：合計(売上)（メジャー）。棒の長さになります。</li>
+        <li><b>色</b>：合計(利益)。青は利益が大きく、オレンジは小さい（マイナス）ことを表します。</li>
+        <li><b>凡例</b>：利益の範囲（−2,662,981 〜 8,414,090）。</li>
+        <li><b>テーブル</b>：売上は大きいのに、色がオレンジです。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="callout insight">
+    <span class="label">分かったこと</span>
+    「テーブル」は売上が 31,203,027 で 4 番目に大きい一方、利益は <b>−2,662,981</b>（凡例の最小値）です。売上だけを見ていると気づけない<b>赤字の商品</b>を、色 1 つで発見できました。
+  </div>
+</section>
+
+<section id="sheet3">
+  <h2><span class="no">5</span>都道府県別 利益マップ（シート 3）</h2>
+  <p class="goal">利益の地域差を日本地図で見ます。</p>
+  <ol class="steps">
+    <li>新しいワークシートを追加します。</li>
+    <li>データペインの「<b>場所</b>」を展開し、「<b>都道府県</b>」をダブルクリックします。緯度・経度が自動で置かれ、都道府県ごとの点が地図に打たれます（45 マーク）。</li>
+    <li>マークカードの<b>マークの種類</b>（「自動」と書かれたドロップダウン）をクリックします。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/09-mark-type-menu.png" target="_blank" rel="noopener"><img src="images/09-mark-type-menu.png" alt="マークの種類のドロップダウンを開いた画面。一覧の中の『マップ』が赤枠で示されている。背景は日本地図に点が打たれた状態。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li>「<b>マップ</b>」を選ぶと、点ではなく都道府県の領域が塗りつぶされます。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <ol class="steps" style="counter-reset: step 3">
+    <li>データペインの「<b>利益</b>」をマークカードの「<b>色</b>」へドラッグします。</li>
+    <li>シート名を「都道府県別 利益マップ」に変更します。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/10-map.png" target="_blank" rel="noopener"><img src="images/10-map.png" alt="利益で色分けされた日本地図。青が利益大、オレンジが利益小。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li><b>マークの種類</b>：マップ（塗りつぶし）</li>
+        <li><b>色</b>：合計(利益)</li>
+        <li><b>詳細</b>：国/地域 と 都道府県。「どの単位で塗り分けるか」を決めています。</li>
+        <li><b>凡例</b>：利益の範囲（−1,584,691 〜 9,776,165）。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="callout insight">
+    <span class="label">分かったこと</span>
+    利益は都道府県で大きくばらつきます。オレンジ系の県は利益が低く（最小 −1,584,691）、濃い青の県は利益が大きい（最大 9,776,165）。次のダッシュボードで、「赤字商品がどの県で出ているか」をこの地図で確認します。
+  </div>
+</section>
+
+<section id="sheet4">
+  <h2><span class="no">6</span>計算フィールドで出荷リードタイムを作る（シート 4）</h2>
+  <p class="goal">元データにない指標を、計算式で自分で作ります。「オーダー日から出荷日まで何日かかったか」を算出します。</p>
+  <ol class="steps">
+    <li>新しいワークシートを追加します。</li>
+    <li>メニューの「<b>分析</b>」→「<b>計算フィールドの作成</b>」を選びます。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/11-analysis-menu.png" target="_blank" rel="noopener"><img src="images/11-analysis-menu.png" alt="分析メニューを開いた画面。『計算フィールドの作成』が赤枠で示されている。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li>分析メニューの「計算フィールドの作成…」</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <ol class="steps" style="counter-reset: step 2">
+    <li>ダイアログの名前欄に「<b>出荷リードタイム(日)</b>」、式の欄に次の式を入力します。</li>
+  </ol>
+  <pre style="background:var(--code-bg);border-radius:8px;padding:.8rem 1rem;overflow-x:auto;"><code style="background:none;padding:0;">DATEDIFF('day', [オーダー日], [出荷日])</code></pre>
+  <figure>
+    <span class="frame"><a href="images/12-calc-field.png" target="_blank" rel="noopener"><img src="images/12-calc-field.png" alt="計算フィールドのダイアログ。名前と式が入力され、『計算は有効です。』と表示されている。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li><b>名前</b>：データペインに表示されるフィールド名になります。</li>
+        <li><b>式</b>：<code>DATEDIFF('day', 開始, 終了)</code> は 2 つの日付の差を日数で返します。フィールド名は <code>[ ]</code> で囲みます。</li>
+        <li><b>検証</b>：「計算は有効です。」と出れば式は正しいです。</li>
+        <li><b>OK</b>：フィールドを作成します。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <ol class="steps" style="counter-reset: step 3">
+    <li>データペインに追加された「<b>出荷リードタイム(日)</b>」を<b>列シェルフ</b>へ、「<b>出荷モード</b>」を<b>行シェルフ</b>へドラッグします。</li>
+    <li>メジャーは初期状態で「合計」です。列のピルを<b>右クリック</b> → 「<b>メジャー(合計)</b>」 → 「<b>平均</b>」を選びます。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/13-aggregation-menu.png" target="_blank" rel="noopener"><img src="images/13-aggregation-menu.png" alt="ピルを右クリックして開いたメニューと、メジャーの集計方法のサブメニュー。『平均』が赤枠で示されている。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li>右クリックメニューの「メジャー(合計)」</li>
+        <li>サブメニューから「<b>平均</b>」を選択。ほかにも中央値・最小値・最大値・標準偏差などを選べます。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <ol class="steps" style="counter-reset: step 5">
+    <li>ツールバーの「<b>降順に並べ替え</b>」と「<b>マーク ラベルを表示</b>」（T のアイコン）をクリックし、シート名を「出荷モード別 平均リードタイム」に変更します。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/14-leadtime-bar.png" target="_blank" rel="noopener"><img src="images/14-leadtime-bar.png" alt="出荷モード別の平均リードタイムの横棒グラフ。通常配送が約5日、翌日配送がほぼ0日。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li>作成した計算フィールド（アイコンが <code>=#</code> になります）</li>
+        <li><b>列</b>：平均(出荷リードタイム(日))</li>
+        <li><b>行</b>：出荷モード</li>
+        <li><b>マーク ラベルを表示</b>：棒の端に数値が出ます。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>出荷モード</th><th class="num">平均リードタイム（日）</th></tr></thead>
+      <tbody>
+        <tr><td>通常配送</td><td class="num">4.995</td></tr>
+        <tr><td>セカンド クラス</td><td class="num">3.238</td></tr>
+        <tr><td>ファースト クラス</td><td class="num">2.182</td></tr>
+        <tr><td>翌日配送</td><td class="num">0.044</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout insight">
+    <span class="label">分かったこと</span>
+    出荷モードの名前どおりにリードタイムが短くなっていることを、データで確認できました。通常配送は平均約 5 日、翌日配送はほぼ 0 日です。
+  </div>
+  <div class="callout">
+    <span class="label">POINT（データサイエンスとのつながり）</span>
+    「既存の列から新しい指標を作る」操作は、SQL の派生列や pandas での特徴量作成と同じ発想です。Tableau では画面上で結果をすぐ確認できます。
+  </div>
+</section>
+
+<section id="dash">
+  <h2><span class="no">7</span>ダッシュボードにまとめる</h2>
+  <p class="goal">4 つのシートを 1 画面に並べ、クリックで連動して絞り込めるようにします。</p>
+  <ol class="steps">
+    <li>メニューの「<b>ダッシュボード</b>」→「<b>新しいダッシュボード</b>」を選びます。</li>
+    <li>左ペインの「サイズ」をクリックし、「固定サイズ」を「<b>自動</b>」に変更します。ウィンドウいっぱいに広がります。</li>
+    <li>左ペインの「シート」から、次の順にドラッグしてキャンバスへ置きます。
+      <ul class="tight">
+        <li>「月別売上推移」を<b>キャンバスの中央</b>へ（全面に広がります）</li>
+        <li>「都道府県別 利益マップ」を<b>右端</b>へ（左右に分割されます）</li>
+        <li>「サブカテゴリ別 売上と利益」を<b>左のグラフの下寄り</b>へ</li>
+        <li>「出荷モード別 平均リードタイム」を<b>右のグラフの下寄り</b>へ</li>
+      </ul>
+    </li>
+    <li>左下の「<b>ダッシュボードのタイトルを表示</b>」にチェックを入れ、タブ名を「売上分析ダッシュボード」に変更します。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/15-dashboard-layout.png" target="_blank" rel="noopener"><img src="images/15-dashboard-layout.png" alt="ダッシュボードの編集画面。左のシート一覧と、2行2列に並んだ4つのグラフに番号が付いている。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li><b>シート一覧</b>：ここからキャンバスへドラッグします。</li>
+        <li>月別売上推移（左上）</li>
+        <li>都道府県別 利益マップ（右上）</li>
+        <li>サブカテゴリ別 売上と利益（左下）</li>
+        <li>出荷モード別 平均リードタイム（右下）</li>
+        <li><b>ダッシュボードのタイトルを表示</b></li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="callout warn">
+    <span class="label">ドロップ位置に注意</span>
+    ドラッグ中は「置かれる場所」が影で表示されます。キャンバスの<b>一番外側の縁</b>に置くと、画面幅いっぱいの行になってしまいます。2×2 にしたいときは<b>既存グラフの内側の下寄り</b>に置きます。失敗したら <kbd>Ctrl</kbd>+<kbd>Z</kbd> で戻せます。
+  </div>
+  <h3>クリックで連動させる（フィルターアクション）</h3>
+  <ol class="steps" style="counter-reset: step 4">
+    <li>「サブカテゴリ別 売上と利益」をクリックして選択し、右上に出るツールバーの<b>漏斗（フィルター）アイコン</b>「<b>フィルターとして使用</b>」をオンにします。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/16-use-as-filter.png" target="_blank" rel="noopener"><img src="images/16-use-as-filter.png" alt="サブカテゴリ別グラフを選択した状態。右上のツールバーにある漏斗アイコンが赤枠で示されている。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li>選択したグラフ（黒い枠）</li>
+        <li><b>フィルターとして使用</b>（漏斗アイコン）：このグラフで選んだ値で、他のグラフを絞り込みます。</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <ol class="steps" style="counter-reset: step 5">
+    <li>棒グラフの「<b>テーブル</b>」をクリックします。他の 3 つのグラフが「テーブル」だけの表示に切り替わります。もう一度クリック（または空白部分をクリック）すると解除されます。</li>
+  </ol>
+  <figure>
+    <span class="frame"><a href="images/17-dashboard-filtered.png" target="_blank" rel="noopener"><img src="images/17-dashboard-filtered.png" alt="テーブルの棒を選択した状態のダッシュボード。折れ線、地図、出荷モード別のグラフがテーブルだけの値に絞り込まれている。" loading="lazy"></a></span>
+    <figcaption>
+      <ol class="marks">
+        <li>クリックした「テーブル」の棒（それ以外は薄くなる）</li>
+        <li>月別売上推移：テーブルだけの売上と予測に変化</li>
+        <li>都道府県別 利益マップ：テーブルの利益で色分けし直し。オレンジの県が赤字に当たる県。</li>
+        <li>出荷モード別 平均リードタイム：テーブルだけの平均に変化</li>
+      </ol>
+    </figcaption>
+  </figure>
+  <div class="callout insight">
+    <span class="label">分かったこと</span>
+    「赤字の商品（テーブル）」を選ぶと、地図でどの県が赤字を作っているかが一目で分かります（このとき地図の利益の範囲は −530,855 〜 364,789）。全体像 → 気づき → 深掘りを 1 画面で往復できるのが、ダッシュボードの価値です。
+  </div>
+</section>
+
+<section id="save">
+  <h2><span class="no">8</span>保存する</h2>
+  <p class="goal">作ったワークブックをファイルとして保存します。</p>
+  <ol class="steps">
+    <li><kbd>Ctrl</kbd>+<kbd>S</kbd> を押します（初回は「名前を付けて保存」が開きます）。</li>
+    <li>ファイルの種類は「<b>Tableau ワークブック (*.twb)</b>」のまま、ファイル名を付けて保存します。この演習では <code>workbooks/superstore-sales-dashboard.twb</code> として保存しました。</li>
+  </ol>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>形式</th><th>中身</th><th>向いている用途</th></tr></thead>
+      <tbody>
+        <tr><td><code>.twb</code></td><td>ワークブックの定義のみ（テキストの XML）。データは含みません。</td><td>GitHub などで管理する。サイズが小さく、差分も追える。</td></tr>
+        <tr><td><code>.twbx</code></td><td>ワークブック ＋ データをまとめたパッケージ。</td><td>他の人にデータごと渡す。</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warn">
+    <span class="label">公開する前に</span>
+    <code>.twb</code> にはデータファイルの<b>保存場所（パス）</b>が書かれます。パスにはお使いの PC のユーザー名が含まれることがあるので、GitHub などに公開する前に確認してください。<code>.twb</code> はテキスト（XML）なので、エディタの検索置換で <code>C:/Users/自分のユーザー名/</code> を <code>C:/Users/USERNAME/</code> に置き換えられます。このリポジトリのワークブックもこの方法で置換しています。
+  </div>
+  <p>完成したワークブックは GitHub の <a href="https://github.com/minimo162/tableau-practice/blob/main/workbooks/superstore-sales-dashboard.twb" target="_blank" rel="noopener"><code>workbooks/superstore-sales-dashboard.twb</code></a> に置いています。開き方は付録の表を参照してください。</p>
+</section>
+
+<section id="next">
+  <h2><span class="no">9</span>分析結果の語り方と次の一歩</h2>
+  <p class="goal">作って終わりにせず、「何が分かり、どう動くか」を言葉にします。</p>
+  <h3>30 秒で説明する例</h3>
+  <div class="callout">
+    <p>「Tableau で小売のサンプルデータ（Superstore）を分析し、4 つのビューを 1 つのダッシュボードにまとめました。年間売上は 2024 年に約 4% 落ち込んだ後、2025 年は約 30%、2026 年は約 21% 伸びています。サブカテゴリ別では、『テーブル』が売上 4 位規模なのに利益は約 −266 万と赤字で、フィルターアクションで見ると、どの都道府県で赤字が出ているかまで確認できます。また、オーダー日と出荷日から計算フィールドで出荷リードタイムを作り、通常配送は平均約 5 日、翌日配送はほぼ 0 日と、モードごとの違いを確認しました。」</p>
+  </div>
+  <p>ポイントは、<b>数字を根拠に</b>、<b>気づき → 次のアクション</b>まで話すことです。たとえば「赤字の理由（割引率が高いのか）を『割引率』フィールドで調べる」が次の一手になります。</p>
+  <h3>次に練習するとよいこと</h3>
+  <ul class="tight">
+    <li><b>割引率と利益の関係</b>：散布図を作り、クラスター（アナリティクス）で分けてみる。</li>
+    <li><b>LOD 式（詳細レベルの式）</b>：顧客ごとの初回購入日など、ビューの粒度と別の粒度で集計する。</li>
+    <li><b>パラメーター</b>：ユーザーが指標（売上・利益・数量）を切り替えられるようにする。</li>
+    <li><b>自分で選んだデータ</b>：公開データセットで同じ流れ（接続 → 4 ビュー → ダッシュボード → 気づきの言語化）を繰り返す。</li>
+    <li>応募先の募集要項に書かれているスキル（SQL・Python・統計・BI など）と照らして、足りない部分を優先的に補う。</li>
+  </ul>
+</section>
+
+<section id="trouble">
+  <h2>付録：つまずきやすい所</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>症状</th><th>原因と対処</th></tr></thead>
+      <tbody>
+        <tr><td>折れ線が年ごとの 4 点だけになる</td><td>日付が「年（離散）」のまま。日付ピルを右クリックし、<b>下段（連続）の「月」</b>を選ぶ。</td></tr>
+        <tr><td>数値が意図より大きい（合計になっている）</td><td>メジャーの既定の集計は「合計」。ピルを右クリック → メジャー → <b>平均</b> などに変更する。</td></tr>
+        <tr><td>傾向線と予測が重なって読みにくい</td><td>どちらか片方を <kbd>Ctrl</kbd>+<kbd>Z</kbd> で戻す、またはビューから削除する。</td></tr>
+        <tr><td>ダッシュボードで、グラフが画面幅いっぱいの行になった</td><td>ドロップ位置が外枠の縁だった。<kbd>Ctrl</kbd>+<kbd>Z</kbd> で戻し、<b>既存グラフの内側の下寄り</b>に置き直す。</td></tr>
+        <tr><td>クリックしても他のグラフが変わらない</td><td>「フィルターとして使用」（漏斗アイコン）がオフ。クリック元のグラフを選択し、オンにする。</td></tr>
+        <tr><td>絞り込みを元に戻したい</td><td>選択中の棒をもう一度クリック、またはグラフの空白をクリックする。</td></tr>
+        <tr><td>ワークブックを開くと「参照ファイル…が見つかりませんでした。別のファイルと置換しますか？」と出る</td><td><code>.twb</code> はデータを含まず、保存時のパスを覚えているため。<b>「はい」</b>を選び、Tableau 付属の「<b>サンプル - スーパーストア.xlsx</b>」を指定する。ファイルは通常 <code>ドキュメント\マイ Tableau リポジトリ\データ ソース\&lt;バージョン&gt;\ja_JP-Japan\</code> にあります。データごと渡したいときは <code>.twbx</code> で保存します。</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  撮影環境：Windows 11 / Tableau Desktop 2026.2（Free Edition・日本語 UI）／ 2026-09-29。画面の一部は見やすさのため赤枠と番号を加えています。
+</footer>
+
+</div>
+</body>
+</html>

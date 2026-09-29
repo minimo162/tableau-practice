@@ -10,6 +10,7 @@ Backups/
 Extracts/
 *.hyper
 *.tde
+~*.twbr
 
 # Office の一時ファイル
 ~$*
