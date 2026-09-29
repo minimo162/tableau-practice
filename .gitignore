@@ -1,0 +1,15 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Tableau のバックアップ・一時ファイル
+*.twbx.bak
+*.twb.bak
+Backups/
+Extracts/
+*.hyper
+*.tde
+
+# Office の一時ファイル
+~$*
